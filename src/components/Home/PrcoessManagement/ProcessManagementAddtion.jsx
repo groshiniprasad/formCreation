@@ -1,8 +1,8 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useContext } from "react";
 import { Form, Button, Modal } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import FormComponent from "../../Common/DynamicBuilder";
-// import {ProcessContext } from "../../context/processStageContext";
+import {ProcessContext } from "../../../context/processStageContext";
 
 const formInfo = {
   formListName: "process_steps",
@@ -13,15 +13,16 @@ const formInfo = {
 const AddPrcessManagement = () => {
   const [form] = Form.useForm();
   const [modal, contextHolder] = Modal.useModal();
+  const { updateProcessValues } = useContext(ProcessContext);
 
 
   const handleSubmit = useCallback(
     (values) => {
       console.log("Form Submitted:", values);
-      // updateProcessValues(values);
+      updateProcessValues(values);
       form.resetFields();
     },
-    [form]
+    [form, updateProcessValues]
   );
 
   const memoizedForm = useMemo(
