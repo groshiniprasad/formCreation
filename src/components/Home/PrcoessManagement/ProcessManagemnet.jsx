@@ -1,4 +1,4 @@
-import AddPrcessManagement from "./ProcessManagementAddtion";
+import AddPrcessManagement from "../GenericFormModal";
  import { ProcessProvider } from "../../../context/processStageContext";
  import  ProcessManagementTable from "./PrcoessManagementTable";
 

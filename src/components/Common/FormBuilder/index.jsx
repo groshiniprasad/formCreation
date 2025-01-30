@@ -172,6 +172,8 @@ const FormBuilder = ({ onDataChange }) => {
   const handleSubmit = () => {
     console.log("Submitting Form Data:", data);
     onDataChange({  data, title, description }); // Send data to the parent only once on submit
+    setData([]); // Clear form data
+    setDescription(""); // Clear description
   };
 
   return (

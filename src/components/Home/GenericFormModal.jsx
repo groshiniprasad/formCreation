@@ -1,16 +1,11 @@
 import { useState, useCallback, useContext } from "react";
 import {  Button, Modal } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import FormComponent from "../../Common/FormBuilder";
-import { ProcessContext } from "../../../context/processStageContext";
+import FormComponent from "../Common/FormBuilder";
+import { ProcessContext } from "../../context/processStageContext";
 
-const formInfo = {
-  formListName: "process_steps",
-  listStages: ["failureMode", "effects", "causes", "controls", "actions"],
-  mainForm: "process",
-};
 
-const AddProcessManagement = () => {
+const GenericFormBuilder = () => {
   const { updateProcessValues } = useContext(ProcessContext);
 
   // Modal Visibility State
@@ -19,9 +14,9 @@ const AddProcessManagement = () => {
   // Handle form submission
   const handleSubmit = useCallback(
     (values) => {
-      console.log("Form Submitted:", values);
-      // updateProcessValues(values);
-      setIsModalVisible(false); // Close modal after submitting
+      console.log("Form Submitted:", values.title, values);
+      updateProcessValues(values);
+      setIsModalVisible(false); 
     },
     [ updateProcessValues]
   );
@@ -52,4 +47,4 @@ const AddProcessManagement = () => {
   );
 };
 
-export default AddProcessManagement;
+export default GenericFormBuilder;

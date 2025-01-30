@@ -1,90 +1,44 @@
-import { Form, Input, Button, Space, Card } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import React from 'react';
+import { Form, Input, Button, Card, Radio } from "antd";
 import PropTypes from 'prop-types';
 
-const DynamicForm = ({ form, onFinish, formInfo }) => {
-  const renderSubFields = (fieldType, key, name, removeSub, addSub, subFields) => (
-    <div
-      style={{
-        marginBottom: 12,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <strong>{fieldType.replace(/([A-Z])/g, " $1")}</strong>
-      {subFields.map(({ key: subKey, name: subName, ...restSubField }) => (
-        <Space
-          key={`${key}-${fieldType}-${subKey}`}
-          align="baseline"
-          style={{ display: "flex", width: "100%" }}
-        >
-          <Form.Item
-            {...restSubField}
-            name={[subName]}
-            rules={[{ required: true, message: "Required" }]}
-            dependencies={[subName]}
-            style={{ flex: 1 }}
-          >
-            <Input placeholder={`Enter ${fieldType}`} />
-          </Form.Item>
-          <MinusCircleOutlined
-            onClick={() => removeSub(subName)}
-            style={{ color: "red", cursor: "pointer" }}
-          />
-        </Space>
-      ))}
-      <Button
-        type="dashed"
-        onClick={() => addSub()}
-        icon={<PlusOutlined />}
-      >
-        Add {fieldType.replace(/([A-Z])/g, " $1")}
-      </Button>
-    </div>
-  );
+const { TextArea } = Input;
 
-  const renderFields = (fields, add, remove) => (
+const DynamicForm = ({ form, onFinish, formInfo }) => {
+  const renderField = (field) => {
+    switch (field.type) {
+      case 'text':
+        return <Input placeholder={field.value} />;
+      case 'textarea':
+        return <TextArea placeholder={field.value} />;
+      case 'radio':
+        return (
+          <Radio.Group>
+            {field.options.map((option) => (
+              <Radio key={option.id} value={option.value}>
+                {option.value}
+              </Radio>
+            ))}
+          </Radio.Group>
+        );
+      default:
+        return <Input placeholder={field.value} />;
+    }
+  };
+
+  const renderFields = (fields) => (
     <>
-      {fields.map(({ key, name, ...restField }) => (
-        <Card key={key} style={{ marginBottom: 16, padding: 10 }}>
-          <Space
-            align="baseline"
-            style={{ display: "flex", width: "100%" }}
+      {fields.map((field) => (
+        <Card key={field.id} style={{ marginBottom: 16, padding: 10 }}>
+          <Form.Item
+            name={field.id}
+            rules={[{ required: field.required, message: `${field.value} is required` }]}
+            style={{ width: "100%" }}
           >
-            <Form.Item
-              {...restField}
-              name={[name, formInfo.mainForm]}
-              rules={[{ required: true, message: "Required" }]}
-              style={{ width: "100%" }}
-            >
-              <Input placeholder="Process / Process Step" />
-            </Form.Item>
-            {fields.length > 1 && (
-              <MinusCircleOutlined
-                onClick={() => remove(name)}
-                style={{ color: "red", cursor: "pointer" }}
-              />
-            )}
-          </Space>
-          {formInfo.listStages.map((fieldType) => (
-            <Form.List key={fieldType} name={[name, fieldType]}>
-              {(subFields, { add: addSub, remove: removeSub }) =>
-                renderSubFields(fieldType, key, name, removeSub, addSub, subFields)
-              }
-            </Form.List>
-          ))}
+            {renderField(field)}
+          </Form.Item>
         </Card>
       ))}
-      <Form.Item>
-        <Button
-          type="dashed"
-          onClick={() => add()}
-          block
-          icon={<PlusOutlined />}
-        >
-          Add Process Step
-        </Button>
-      </Form.Item>
     </>
   );
 
@@ -95,9 +49,7 @@ const DynamicForm = ({ form, onFinish, formInfo }) => {
       onFinish={onFinish}
       autoComplete="off"
     >
-      <Form.List name={formInfo.formListName}>
-        {(fields, { add, remove }) => renderFields(fields, add, remove)}
-      </Form.List>
+      {renderFields(formInfo.data)}
     </Form>
   );
 };
@@ -105,7 +57,24 @@ const DynamicForm = ({ form, onFinish, formInfo }) => {
 DynamicForm.propTypes = {
   form: PropTypes.object.isRequired,
   onFinish: PropTypes.func.isRequired,
-  formInfo: PropTypes.object.isRequired,
+  formInfo: PropTypes.shape({
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        value: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
+        required: PropTypes.bool,
+        options: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            value: PropTypes.string.isRequired,
+          })
+        ),
+      })
+    ).isRequired,
+    title: PropTypes.string,
+    description: PropTypes.string,
+  }).isRequired,
 };
 
 export default DynamicForm;

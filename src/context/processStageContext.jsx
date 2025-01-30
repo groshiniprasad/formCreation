@@ -3,32 +3,35 @@ import React, { createContext, useState } from "react";
 export const ProcessContext = createContext();
 
 export const ProcessProvider = ({ children }) => {
-  const [processValues, setProcessValues] = useState({});
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentRecord, setCurrentRecord] = useState(null);
+  const [processValues, setProcessValues] = useState([]);
+  const [tableData, setTableData] = useState(null);
 
-  const updateProcessValues = (values) => {
-    setProcessValues(values);
+  const updateProcessValues = (newValues) => {
+    if (!Array.isArray(newValues)) {
+      newValues = [newValues];
+    }
+    setProcessValues((prevValues) => [
+      ...prevValues,
+      ...newValues,
+    ]);
   };
 
-  const showModal = (record) => {
-    setCurrentRecord(record);
-    setIsModalVisible(true);
-  };
-
-  const hideModal = () => {
-    setCurrentRecord(null);
-    setIsModalVisible(false);
+  const updateTableData = (newValues) => {
+    if (!Array.isArray(newValues)) {
+      newValues = [newValues];
+    }
+    setTableData((prevValues) => [
+      ...prevValues,
+      ...newValues,
+    ]);
   };
 
   const contextValue = React.useMemo(() => ({
     processValues,
     updateProcessValues,
-    isModalVisible,
-    showModal,
-    hideModal,
-    currentRecord,
-  }), [processValues, isModalVisible, currentRecord]);
+    tableData,
+    updateTableData,
+  }), [processValues, tableData, updateTableData]);
 
   return (
     <ProcessContext.Provider value={contextValue}>
