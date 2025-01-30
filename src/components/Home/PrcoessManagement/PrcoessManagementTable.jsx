@@ -1,9 +1,10 @@
-import React, { useContext, useMemo, useState } from "react";
-import { Table, Card, Tag, Tooltip, Dropdown, Menu, Button, Modal } from "antd";
-import { DownOutlined, DashOutlined } from "@ant-design/icons";
+import React, { useContext, useState, useMemo } from "react";
+import { Table, Card, Button, Modal, Tag, Tooltip } from "antd";
 import * as XLSX from "xlsx";
+import Handsontable from "handsontable";
+import { HotTable } from "@handsontable/react";
+import "handsontable/dist/handsontable.full.css";
 import { ProcessContext } from "../../../context/processStageContext";
-
 
 const sampleData = [
   {
@@ -23,74 +24,14 @@ const sampleData = [
     actions: ["ActionA"],
   },
 ];
+
 const TableComponent = () => {
   const { processValues } = useContext(ProcessContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [excelData, setExcelData] = useState([]);
+  const [excelBlob, setExcelBlob] = useState(null);
+
   const data = processValues.length ? processValues : sampleData;
-  const processActions = [
-    { label: "View", func: (row) => handleExportRow(row) },
-    { label: "Download", func: () => console.log("Download") },
-    { label: "Delete", func: () => console.log("Delete") },
-  ];
-
-
-  let rows = [];
-  const handleExportRow = () => {
-    const formData = processValues.length ? processValues : sampleData;
-
-    let mergeRanges = [];
-
-    let rowStart = 1; // Start row for merging cells
-
-    formData.forEach((item) => {
-        // Find the maximum number of rows needed for this process step
-        const maxRows = Math.max(
-            item.failureMode.length || 1,
-            item.effects.length || 1,
-            item.causes.length || 1,
-            item.controls.length || 1,
-            item.actions.length || 1
-        );
-
-        for (let i = 0; i < maxRows; i++) {
-            rows.push({
-                "Process / Process Step": i === 0 ? item.process : "", // Only keep process step in first row
-                "Potential Failure Mode": item.failureMode[i] || "",
-                "Potential Failure Effects": item.effects[i] || "",
-                "Potential Causes": item.causes[i] || "",
-                "Current Controls": item.controls[i] || "",
-                "Actions Recommended": item.actions[i] || "",
-            });
-        }
-
-        // Keep track of merged cell range
-        if (maxRows > 1) {
-            mergeRanges.push([rowStart + 1, rowStart + maxRows]); // Adjust for Excel row index (1-based)
-        }
-        rowStart += maxRows;
-    });
-
-    // Convert data to worksheet
-    const ws = XLSX.utils.json_to_sheet(rows, { origin: "A1" });
-
-    // Create a workbook and append sheet
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Failure Analysis");
-
-    // Apply merged cell formatting for process steps
-    const wsRef = wb.Sheets["Failure Analysis"];
-    mergeRanges.forEach(([start, end]) => {
-        wsRef["!merges"] = wsRef["!merges"] || [];
-        wsRef["!merges"].push({ s: { r: start, c: 0 }, e: { r: end - 1, c: 0 } }); // Merge Process Step Column (A)
-    });
-
-    // Export file
-    XLSX.writeFile(wb, "Process_Failure_Analysis.xlsx");
-
-    /*   setExcelData(jsonData); 
-      setIsModalOpen(true);  */
-  };
 
   const columns = useMemo(() => [
     { title: "Process", dataIndex: "process", key: "process" },
@@ -160,32 +101,104 @@ const TableComponent = () => {
   const memoizedData = useMemo(() => data.map((item, index) => ({
     key: index,
     ...item,
-    columnActions: processActions,
   })), [data]);
 
+
+  const handleExportRow = () => {
+    const formData = processValues.length ? processValues : sampleData;
+    let rows = [];
+    let mergeRanges = [];
+    let rowStart = 1;
+
+    formData.forEach((item) => {
+      const maxRows = Math.max(
+        item.failureMode.length || 1,
+        item.effects.length || 1,
+        item.causes.length || 1,
+        item.controls.length || 1,
+        item.actions.length || 1
+      );
+
+      for (let i = 0; i < maxRows; i++) {
+        rows.push([
+          i === 0 ? item.process : "", // Merge Process Step
+          item.failureMode[i] || "",
+          item.effects[i] || "",
+          item.causes[i] || "",
+          item.controls[i] || "",
+          item.actions[i] || "",
+        ]);
+      }
+
+      if (maxRows > 1) {
+        mergeRanges.push([rowStart + 1, rowStart + maxRows]);
+      }
+      rowStart += maxRows;
+    });
+
+    // Convert to worksheet
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["Process / Process Step", "Potential Failure Mode", "Potential Failure Effects", "Potential Causes", "Current Controls", "Actions Recommended"], // Headers
+      ...rows, // Data
+    ]);
+
+    // Create workbook and append sheet
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Failure Analysis");
+
+    // Generate Excel as Blob
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+    setExcelData(rows); // Store table preview data
+    setExcelBlob(blob); // Store file for download
+    setIsModalOpen(true); // Show modal
+  };
+
+  
+
+  const downloadExcelFile = () => {
+    if (!excelBlob) return;
+
+    const url = window.URL.createObjectURL(excelBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Process_Failure_Analysis.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    setIsModalOpen(false);
+  };
+  const memoizedHotTable = useMemo(
+    () => (
+      <HotTable
+        data={excelData}
+        colHeaders={["Process / Process Step", "Potential Failure Mode", "Potential Failure Effects", "Potential Causes", "Current Controls", "Actions Recommended"]}
+        rowHeaders={true}
+        width="100%"
+        height="300"
+        stretchH="all"
+        licenseKey="non-commercial-and-evaluation"
+        contextMenu={true}
+      />
+    ),
+    [excelData]
+  );
+
   return (
-    <Card title="Process Failure Analysis" style={{ marginTop: 20 }} extra={<><Button onClick={handleExportRow}>View</Button> <Button onClick={() => setIsModalOpen(true)}>See</Button></>}>
+    <Card title="Process Failure Analysis" style={{ marginTop: 20 }} extra={<Button type="primary" onClick={handleExportRow}>Generate Excel</Button>}>
+      
+      
       <Table dataSource={memoizedData} columns={columns} pagination={{ pageSize: 5 }} />
-      <Modal title="Excel Data" open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={600}>
-        {rows.length > 0 ? (
-          <table border="1" style={{ width: "100%", textAlign: "center" }}>
-            <thead>
-              <tr>
-                {Object.keys(rows[0]).map((key) => (
-                  <th key={key}>{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={rows}>
-                  {Object.entries(row).map(([key, value]) => (
-                    <td key={`${rowIndex}-${key}`}>{value}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      {/* Modal with Handsontable Excel Grid */}
+      <Modal title="Excel File Preview" open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={800}>
+        {excelData.length > 0 ? (
+          <>
+            {memoizedHotTable}
+            <Button type="primary" style={{ marginTop: 16 }} onClick={downloadExcelFile}>Download Excel</Button>
+          </>
         ) : (
           <p>No Excel Data Available</p>
         )}
