@@ -1,8 +1,8 @@
-import { useMemo, useCallback, useContext } from "react";
-import { Form, Button, Modal } from "antd";
+import { useState, useCallback, useContext } from "react";
+import {  Button, Modal } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import FormComponent from "../../Common/DynamicBuilder";
-import {ProcessContext } from "../../../context/processStageContext";
+import FormComponent from "../../Common/FormBuilder";
+import { ProcessContext } from "../../../context/processStageContext";
 
 const formInfo = {
   formListName: "process_steps",
@@ -10,50 +10,46 @@ const formInfo = {
   mainForm: "process",
 };
 
-const AddPrcessManagement = () => {
-  const [form] = Form.useForm();
-  const [modal, contextHolder] = Modal.useModal();
+const AddProcessManagement = () => {
   const { updateProcessValues } = useContext(ProcessContext);
 
+  // Modal Visibility State
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // Handle form submission
   const handleSubmit = useCallback(
     (values) => {
       console.log("Form Submitted:", values);
-      updateProcessValues(values);
-      form.resetFields();
+      // updateProcessValues(values);
+      setIsModalVisible(false); // Close modal after submitting
     },
-    [form, updateProcessValues]
+    [ updateProcessValues]
   );
-
-  const memoizedForm = useMemo(
-    () => <FormComponent form={form} onFinish={handleSubmit} formInfo={formInfo} />,
-    [form, handleSubmit]
-  );
-
-  const handleOpenModal = () => {
-    modal.confirm({
-      title: "Stage Management Form",
-      content: memoizedForm,
-      okText: "Submit",
-      cancelText: "Cancel",
-      onOk: () => form.submit(),
-      closable: true,
-      className: "custom-modal",
-      style: { maxWidth: "1200px", minWidth: "600px" },
-    });
-  };
 
   return (
-    
     <div style={{ textAlign: "right", marginTop: 20 }}>
-      <Button type="primary" onClick={handleOpenModal} icon={<PlusOutlined />}>
-        Add Process
+      {/* Open Modal */}
+      <Button 
+        type="primary" 
+        onClick={() => setIsModalVisible(true)} 
+        icon={<PlusOutlined />} 
+        aria-label="Create Generic Form"
+      >
+        Create Form 
       </Button>
-      {contextHolder}
-      <p>
-      </p>
+
+      {/* Full-Sized Modal */}
+      <Modal
+        title="Genric Form Creation "
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        width={1000} // Adjust modal size
+        className="custom-modal"
+      >
+        <FormComponent onDataChange={handleSubmit} />
+      </Modal>
     </div>
   );
 };
 
-export default AddPrcessManagement;
+export default AddProcessManagement;
