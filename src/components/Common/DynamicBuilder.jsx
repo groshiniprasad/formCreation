@@ -29,8 +29,9 @@ const DynamicForm = ({ form, onFinish, formInfo }) => {
   const renderFields = (fields) => (
     <>
       {fields.map((field) => (
-        <Card key={field.id} style={{ marginBottom: 16, padding: 10 }}>
+        <Card key={field.id} style={{ marginBottom: 6, padding: 0 }}>
           <Form.Item
+            label={field.value}
             name={field.id}
             rules={[{ required: field.required, message: `${field.value} is required` }]}
             style={{ width: "100%" }}
