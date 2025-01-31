@@ -3,12 +3,15 @@ import React, { createContext, useState } from "react";
 export const ProcessContext = createContext();
 
 export const ProcessProvider = ({ children }) => {
-  const [processValues, setProcessValues] = useState({});
+  const [processValues, setProcessValues] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
 
-  const updateProcessValues = (values) => {
-    setProcessValues(values);
+  const updateProcessValues = (newValues) => {
+    setProcessValues((prevValues) => [
+      ...prevValues,
+      ...newValues,
+    ]);
   };
 
   const showModal = (record) => {

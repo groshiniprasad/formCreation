@@ -31,7 +31,7 @@ const TableComponent = () => {
   const [excelData, setExcelData] = useState([]);
   const [excelBlob, setExcelBlob] = useState(null);
 
-  const data = processValues.length ? processValues : sampleData;
+  let data = processValues.length ? processValues : sampleData;
 
   const columns = useMemo(() => [
     { title: "Process", dataIndex: "process", key: "process" },
@@ -81,7 +81,7 @@ const TableComponent = () => {
           <Dropdown
             overlay={
               <Menu>
-                {actions.map(({ label, func }, index) => (
+                {actions?.map(({ label, func }, index) => (
                   <Menu.Item key={index} onClick={() => func(row)}>
                     {label}
                   </Menu.Item>
@@ -98,7 +98,7 @@ const TableComponent = () => {
     },
   ], []);
 
-  const memoizedData = useMemo(() => data.map((item, index) => ({
+  const memoizedData = useMemo(() => data?.map((item, index) => ({
     key: index,
     ...item,
   })), [data]);
@@ -112,21 +112,21 @@ const TableComponent = () => {
 
     formData.forEach((item) => {
       const maxRows = Math.max(
-        item.failureMode.length || 1,
-        item.effects.length || 1,
-        item.causes.length || 1,
-        item.controls.length || 1,
-        item.actions.length || 1
+        item.failureMode?.length || 1,
+        item.effects?.length || 1,
+        item.causes?.length || 1,
+        item.controls?.length || 1,
+        item.actions?.length || 1
       );
 
       for (let i = 0; i < maxRows; i++) {
         rows.push([
-          i === 0 ? item.process : "", // Merge Process Step
-          item.failureMode[i] || "",
-          item.effects[i] || "",
-          item.causes[i] || "",
-          item.controls[i] || "",
-          item.actions[i] || "",
+          i === 0 ? item?.process ?? "" : "", 
+          item?.failureMode?.[i] ?? "",
+          item?.effects?.[i] ?? "",
+          item?.causes?.[i] ?? "",
+          item?.controls?.[i]?.value ?? "", 
+          item?.actions?.[i] ?? "",
         ]);
       }
 

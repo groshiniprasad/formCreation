@@ -19,7 +19,7 @@ const AddPrcessManagement = () => {
   const handleSubmit = useCallback(
     (values) => {
       console.log("Form Submitted:", values);
-      updateProcessValues(values);
+      updateProcessValues(values[formInfo.formListName]);
       form.resetFields();
     },
     [form, updateProcessValues]
