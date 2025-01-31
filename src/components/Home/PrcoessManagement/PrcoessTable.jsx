@@ -41,17 +41,38 @@ const TableComponent = () => {
       ], [processValues]);
 
   const handleExportFullTable = useCallback(() => {
-    // Convert each row into a format suitable for Excel
-    const formattedData = data.map((row) => ({
-      Process: row.process,
-      "Failure Mode": row.failureMode.join(", "),
-      Effects: row.effects.join(", "),
-      Causes: row.causes.join(", "),
-      Controls: row.controls.map((control) => `${control.type}: ${control.value}`).join(", "),
-      Actions: row.actions.join(", "),
-    }));
+    let mergeRanges = [];
 
-    setExcelData(formattedData);
+    let rows = [];
+    let rowStart = 1;
+
+    data.forEach((item) => {
+      const maxRows = Math.max(
+        item.failureMode.length || 1,
+        item.effects.length || 1,
+        item.causes.length || 1,
+        item.controls.length || 1,
+        item.actions.length || 1
+      );
+
+      for (let i = 0; i < maxRows; i++) {
+        rows.push([
+          i === 0 ? item.process : "", // Merge Process Step
+          item.failureMode[i] || "",
+          item.effects[i] || "",
+          item.causes[i] || "",
+          item.controls[i] || "",
+          item.actions[i] || "",
+        ]);
+      }
+
+      if (maxRows > 1) {
+        mergeRanges.push([rowStart + 1, rowStart + maxRows]);
+      }
+      rowStart += maxRows;
+    });
+
+    setExcelData(rows);
     setIsExcelModalOpen(true); // Open Modal with Data Preview
   }, [data]);
 
@@ -149,6 +170,8 @@ const TableComponent = () => {
         isVisible={isFormModalVisible}
         onClose={() => setIsFormModalVisible(false)}
         onSubmit={handleFormSubmit}
+        formInfo={processValues ? processValues[0] : []}
+
       />
 
       {/*  Modal with Handsontable Excel Grid Before Download */}

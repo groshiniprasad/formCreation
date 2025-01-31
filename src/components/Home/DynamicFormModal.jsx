@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Form, Button } from 'antd';
 import DynamicForm from '../Common/DynamicBuilder';
 
-const formInfo = {
+const sampleData = {
   data: [
     {
       id: "a05edc98-bd4e-d566-e048-6b6280ae548d",
@@ -32,7 +32,7 @@ const formInfo = {
   description: ""
 };
 
-const DynamicFormModal = ({ isVisible, onClose, onSubmit }) => {
+const DynamicFormModal = ({ isVisible, onClose, onSubmit, formInfo }) => {
   const [form] = Form.useForm();
 
   const handleOk = () => {
@@ -43,16 +43,17 @@ const DynamicFormModal = ({ isVisible, onClose, onSubmit }) => {
     onSubmit(values);
     onClose();
   };
+  const data = formInfo ? formInfo?.data : sampleData;
 
   return (
     <Modal
-      title={formInfo.title || "Form"}
+      title={formInfo?.title || "Form"}
       visible={isVisible}
       onOk={handleOk}
       onCancel={onClose}
       okText="Submit"
     >
-      <DynamicForm form={form} onFinish={handleFinish} formInfo={formInfo} />
+      <DynamicForm form={form} onFinish={handleFinish} formInfo={data} />
     </Modal>
   );
 };

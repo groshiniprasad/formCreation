@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Card, Radio } from "antd";
+import { Form, Input, Card, Radio } from "antd";
 import PropTypes from 'prop-types';
 
 const { TextArea } = Input;
@@ -28,7 +28,7 @@ const DynamicForm = ({ form, onFinish, formInfo }) => {
 
   const renderFields = (fields) => (
     <>
-      {fields.map((field) => (
+      {fields?.map((field) => (
         <Card key={field.id} style={{ marginBottom: 6, padding: 0 }}>
           <Form.Item
             label={field.value}
@@ -50,7 +50,7 @@ const DynamicForm = ({ form, onFinish, formInfo }) => {
       onFinish={onFinish}
       autoComplete="off"
     >
-      {renderFields(formInfo.data)}
+      {renderFields(formInfo?.data)}
     </Form>
   );
 };

@@ -1,6 +1,6 @@
 import AddPrcessManagement from "../GenericFormModal";
  import { ProcessProvider } from "../../../context/processStageContext";
- import  ProcessManagementTable from "./PrcoessTable";
+ import  ProcessManagementTable from "./Table/TableComponent";
 
 const ProcessManagement = () => {
   return (
