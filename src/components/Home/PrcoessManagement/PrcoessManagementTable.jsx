@@ -1,7 +1,6 @@
 import React, { useContext, useState, useMemo } from "react";
 import { Table, Card, Button, Modal, Tag, Tooltip } from "antd";
 import * as XLSX from "xlsx";
-import Handsontable from "handsontable";
 import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { ProcessContext } from "../../../context/processStageContext";
@@ -136,17 +135,14 @@ const TableComponent = () => {
       rowStart += maxRows;
     });
 
-    // Convert to worksheet
     const ws = XLSX.utils.aoa_to_sheet([
       ["Process / Process Step", "Potential Failure Mode", "Potential Failure Effects", "Potential Causes", "Current Controls", "Actions Recommended"], // Headers
       ...rows, // Data
     ]);
 
-    // Create workbook and append sheet
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Failure Analysis");
 
-    // Generate Excel as Blob
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
@@ -188,8 +184,6 @@ const TableComponent = () => {
 
   return (
     <Card title="Process Failure Analysis" style={{ marginTop: 20 }} extra={<Button type="primary" onClick={handleExportRow}>Generate Excel</Button>}>
-      
-      
       <Table dataSource={memoizedData} columns={columns} pagination={{ pageSize: 5 }} />
 
       {/* Modal with Handsontable Excel Grid */}

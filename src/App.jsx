@@ -6,11 +6,8 @@ import './App.css'
 
 function App() {
   return (
-
-
     <Router>
       <MainLayout >
-
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/profile" element={<ProfilePage />} />
